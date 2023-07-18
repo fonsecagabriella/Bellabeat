@@ -1,0 +1,1416 @@
+---
+title: "Bella_R_notebook"
+output: html_document
+date: '2022-08-08'
+author: 'Gabriella Fonseca imgabi.com'
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Bellabeat Case Study - Google Data Certification
+
+This document will show the steps followed for the analysis of Bellabeat
+data set, as part of the completion of Google's Data Certification
+course.
+
+In order to get familiar with working inside the R environment, no other
+data software has been used during the process. I tried to add as many
+comments as possible so this document can hopefully help other students
+as well as serve as a consultation guide for my future self 🙂 🤓
+
+👩‍💻 You can find the "executive version" of the project in my portfolio:
+<https://imgabi.com/project-bellabeat/>
+
+❤️ **Please give proper credits if you use my material** ❤️
+
+## 1. Business questions
+
+Bellabeat wants to investigate new opportunities for the development of
+marketing initiatives based on the behaviour of current users. For this,
+the stakeholders summarised three main areas of investigation:
+
+-   What are some trends in smart device usage?
+
+-   How could these trends apply to Bellabeat customers?
+
+-   How could these trends help influence Bellabeat marketing strategy?
+
+## 2. My approach
+
+My approach starts by investigating trends in the smart device industry.
+This will lead the development of more specific questions which I can
+investigate with the data sets provided. It is important to mention the
+list of questions is a iterative process, so new questions can come up
+during the analysis. Nevertheless, having some sort of "map" can be
+helpful to organise myself along the way.
+
+Based on my research, I want to:
+
+### A. QUALITY OF DATA
+
+**a1.** How many users are in this data set?
+
+**a2.** What type of data are we analysing? (What do this users track?)
+
+**a3.** What is the date period for the analysis?
+
+**a4.** Is the data tracked automatically or manually?
+
+**a5.** How often do users wear their device?
+
+### B. PROFILE OF USERS
+
+**b1.** What are the average values for this data set?
+
+**b2.** When are users more active? (Possible to break down by day of
+week, month?)
+
+**b3.** Link profile of users to current literature
+
+**b4.** Understand if different users groups behave differently
+
+**b5.** Identify segments of users and set a profile for them.
+
+With more clarity on what I need to investigate, I move them to create
+my work directory. That is organised as it follows:
+
+> **working directory**
+>
+> 1.  data
+>
+> 2.  data_output
+>
+> 3.  documents
+>
+> 4.  figure_output
+>
+> 5.  scripts
+
+All the data I received from Bellabeat is uploaded into the folder
+"*data"*. The content of this notebook itself is saved under folder
+*"scripts"*.
+
+## 3. Preparing for the analysis
+
+### 3.1 Installing & loading packages
+
+Most of my analysis will require the packages *tidyverse* and *lubridate
+(to work with dates)*. Important to remember that the package
+*tidyverse* contains in itself the packages *ggplot2, dplyr, tidyr,
+readr, purrr, tibble, stringr, forcats*. As I will need most of these
+packages, I'd rather install and load *tidyverse* in one go! 🚀
+
+```{r packages, message=FALSE, warning=FALSE}
+# install packages
+install.packages("tidyverse")
+install.packages("lubridate")
+
+
+#load all packages
+library(tidyverse)
+library(lubridate)
+
+```
+
+### 3.2 Read the data sets from Bella
+
+Here I decided to name the data frames I would be working with by
+starting with the unity they represent. Additional check to confirm if
+the number of data sets corresponds to the number in the ZIP files I
+received. I had an error so if I hadn't checked this, I'd miss two data
+sets in my analysis. Make sure to set the directory accordingly!
+
+I decided to load all the data sets simply to get used with working in
+the R environment. At the same time, I like to build the relational
+model of the tables I receive, this give me more clarity during the
+analysis process. However, for the sake of memory, I removed all the
+initial "speak-peak tables" so I can later on load only what I need.
+
+```{r read_datasets}
+
+# For all
+# Read file and create data frame
+# Check the columns and types with glimpse on some valyes
+
+daily_intensities_df <- read.csv("data/dailyIntensities_merged.csv")
+glimpse(daily_intensities_df)
+
+daily_steps_df <- read.csv("data/dailySteps_merged.csv")
+glimpse(daily_steps_df)
+
+
+seconds_heartRate_df <- read.csv("data/heartrate_seconds_merged.csv")
+glimpse(seconds_heartRate_df)
+
+
+hourly_calories_df <- read.csv("data/hourlyCalories_merged.csv")
+glimpse(hourly_calories_df)
+
+hourly_intensities_df <- read.csv("data/hourlyIntensities_merged.csv")
+glimpse(hourly_intensities_df)
+
+hourly_steps_df <- read.csv("data/hourlySteps_merged.csv")
+glimpse(hourly_steps_df)
+
+minute_caloriesNarrow_df <- read.csv("data/minuteCaloriesNarrow_merged.csv")
+glimpse(minute_caloriesNarrow_df)
+
+
+minute_caloriesWide_df <- read.csv("data/minuteCaloriesWide_merged.csv")
+glimpse(minute_caloriesWide_df)
+
+
+minute_intensitiesNarrow_df <- read.csv("data/minuteIntensitiesNarrow_merged.csv")
+glimpse(minute_intensitiesNarrow_df)
+
+minute_intensitiesWide_df <- read.csv("data/minuteIntensitiesWide_merged.csv")
+glimpse(minute_intensitiesWide_df)
+
+minute_METsNarrow_df <- read.csv("data/minuteMETsNarrow_merged.csv")
+glimpse(minute_METsNarrow_df)
+
+minute_sleep_df <- read.csv("data/minuteSleep_merged.csv")
+glimpse(minute_sleep_df)
+
+minute_stepsNarrow_df <- read.csv("data/minuteStepsNarrow_merged.csv")
+glimpse(minute_stepsNarrow_df)
+
+minute_stepsWide_df <- read.csv("data/minuteStepsWide_merged.csv")
+glimpse(minute_stepsWide_df)
+
+daily_sleep_df <- read.csv("data/sleepDay_merged.csv")
+glimpse(daily_sleep_df)
+
+weight_logInfo_df <- read.csv("data/weightLogInfo_merged.csv")
+glimpse(weight_logInfo_df)
+
+
+```
+
+[![Model of the data
+set](https://imgabi.com/wp-content/uploads/2022/10/bellabeat-google-data-certification-dataset-2048x1274.png)](https://imgabi.com/project-bellabeat#preparing-the-data)
+
+With the drawing of the model, I want to check my hypothesis that some
+times have already been clean for me. I assumed that the *narrow tables*
+are a cleaned version of the *wide tables.* The following code-block has
+a few ways to investigate this matter.
+
+```{r get_to_know_my_data, include=FALSE}
+
+# Here I expect a TRUE Value for the next 3 steps.
+# I count the  distinct values for ID in both tables and
+# then see if the first group is inside the second one.
+
+# CALORIES
+(n_distinct(minute_caloriesNarrow_df$Id)) == (n_distinct(minute_caloriesWide_df$Id)) &&
+all(minute_caloriesNarrow_df$Id %in% minute_caloriesWide_df$Id)
+
+# INTENSITIES
+(n_distinct(minute_intensitiesNarrow_df$Id)) == (n_distinct(minute_intensitiesWide_df$Id)) &&
+
+all(minute_intensitiesNarrow_df$Id %in% minute_intensitiesWide_df$Id)
+
+# CALORIES
+(n_distinct(minute_caloriesWide_df$Id)) == (n_distinct(minute_caloriesNarrow_df$Id)) &&
+all(minute_caloriesNarrow_df$Id %in% minute_caloriesWide_df$Id)
+
+
+# Since all checks came true, I will delete all objects for the sake of memory and create tibbles from now on with the ones I want to use in my analysis
+rm(list = ls())
+
+```
+
+### 3.3 Create tibbles for analysis
+
+After getting familiar with the data, I can decide on the data frames I
+want to work with. I identified five types of data Sleep, Activity (
+with consists of Calories, Steps, Intensities), METs, Heart Rate,
+Weight.
+
+I start with creating a tibble for each of them, while performing data
+cleaning steps.
+
+```{r setup_tables_analysis}
+
+# NAME CONVENTION
+# unitOfTime_tableName
+
+#DAILY ACTIVITY
+daily_activity_tb <- tibble(read.csv("data/dailyActivity_merged.csv"))
+# check for duplicated entries
+sum(duplicated(daily_activity_tb))
+
+#remove duplicates
+anyDuplicated(daily_activity_tb)
+
+# check table
+glimpse(daily_activity_tb)
+
+# need to convert ActivityDate to Date format
+daily_activity_tb <- daily_activity_tb %>%
+  mutate(ActivityDate=mdy(ActivityDate))
+
+#some people would now rename columns with lowercase
+# I did this first, but decide to skip this step
+# since it makes the column names hard to read
+# rename_with(daily_activity_tb, tolower)
+
+#move on to do the same
+#with sleep and weight so I can merge tables later
+
+#SLEEP
+daily_sleep_tb <- tibble(read.csv("data/sleepDay_merged.csv"))
+
+#check for duplicates
+sum(duplicated(daily_sleep_tb))
+
+#remove duplicate from data
+daily_sleep_tb <- unique(daily_sleep_tb)
+
+#convert date column and names the same as ActivityDate
+#convert SleepDay to date and changes the column name to match with previous table
+daily_sleep_tb <- daily_sleep_tb %>%
+  mutate(SleepDay = as_date(mdy_hms(SleepDay))) %>%
+  rename(ActivityDate = SleepDay)
+
+# WEIGHT INFO
+weight_info_tb <- tibble(read.csv("data/weightLogInfo_merged.csv"))
+glimpse(weight_info_tb)
+
+weight_info_tb <- weight_info_tb %>%
+  #because I am only interested in the weight of the day, I can do this conversion to date
+  mutate(Date = as_date(mdy_hms(Date))) %>%
+  rename(ActivityDate = Date)
+
+sum(duplicated(weight_info_tb))
+
+
+#MET
+#MET is calculated by Minute, so I cannot merge with the previous 3 tables
+minute_met_tb <- tibble(read.csv("data/minuteMETsNarrow_merged.csv"))
+glimpse(minute_met_tb)
+
+#check for duplicates
+sum(duplicated(minute_met_tb))
+
+
+# HEART
+#same as with MET, heart rate is calculated by second, it cannot be merged with 3 first tables
+second_heart_rate_tb <- as_tibble(read.csv("data/heartrate_seconds_merged.csv"))
+
+glimpse(second_heart_rate_tb)
+
+second_heart_rate_tb <- second_heart_rate_tb %>%
+  mutate(Time=mdy_hms(Time)) %>%
+  rename(DayTime = Time)
+
+# the second_heart_rate_tb is quite big, and I was running into memore issues
+#so the following two commands are with comments.
+# You can try to run them in your environment yourself by removing the #
+
+# check for duplicates
+sum(duplicated(second_heart_rate_tb))
+
+#remove duplicate from data
+second_heart_rate_tb <- unique(second_heart_rate_tb)
+
+```
+
+With the tables set, I can start the analyses 📊
+As I am looking at high-level data, not into a detailed profile for each use,
+the daily values and their respective averages are going to be investigated.
+
+## 4. Exploration Data Analysis
+
+### 4.1 Exploring reasons why people use smart watches (Set A)
+
+I will start exploring some basic information in my tibbles. These
+explorations are aimed at answering the questions as determined in Set
+A.
+
+```{r set_a_users_and_functions}
+
+#A. QUALITY OF DATA
+
+#a1. How many users are in this dataset?
+#a2. What type of data are we analysing? (What do this users track?)
+#a3. What is the date period for the analysis?
+#a4. Is the data tracked automatically or manually?
+#a5. How often do users wear their device?
+
+
+#Check number of distinct users by type of recorded event
+n_distinct(daily_activity_tb$Id) #33
+n_distinct(daily_sleep_tb$Id) #24
+n_distinct(weight_info_tb$Id) #8
+n_distinct(minute_met_tb$Id) #33
+n_distinct(second_heart_rate_tb$Id) #14
+
+#For the next analysis I need more information about MET, so I will ignore it
+remove(minute_met_tb)
+
+#In order to create the graph, I will create a tibble with the values above
+users_event <- tribble(
+  ~event, ~totalUsers,
+  "daily activity", n_distinct(daily_activity_tb$Id),
+  "sleep", n_distinct(daily_sleep_tb$Id),
+  "weight", n_distinct(weight_info_tb$Id),
+  "heart rate", n_distinct(second_heart_rate_tb$Id)
+)
+
+
+glimpse(users_event)
+
+#Bar chart to show different types of events recorded by users.
+ggplot(data=users_event,mapping = aes(x = event, y = totalUsers)) +
+  #obs: ,stats, needs to be changed to identity because there is no sum being operated
+  # we are simply taking the values set byt each event.
+  geom_bar(fill="#6186f0", stat="identity") +
+  #adds count on the end of the bar for better legibility
+  geom_text(aes(label = totalUsers), hjust = -0.5, colour = "#808080")+
+  #adds labels
+  labs(title = "Total number of users per function",
+       caption = "There are five functions offered by the app, but not all of them are used to the same extend.",x= "Function", y= "Total Unique Users") +
+  #customise colours of the labels
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title.x = element_text(color="#6186f0", size=12, face="bold"),
+  axis.title.y = element_text(color="#6186f0", size=12, face="bold"),
+  panel.background = element_blank(),
+  panel.grid = element_blank(),
+  axis.line = element_line(colour = "#000000")
+  )+
+  #flips coordinates so it is easier to read
+  coord_flip()
+
+# Saves recent graph
+ggsave("../figure_output/01_types_of_activity_recorded_by_users.png")
+
+
+# INSIGHTS
+# a1. There are 33 users in this data set.
+# a2. Users are tracking their daily activity (which includes calores, intensity of activity,and steps.), sleep, MET, heart rate and weight. No all these events are recorded by all users. 
+
+
+```
+
+I will also produce a Venn Diagram to get an overview of the overlapping
+using of functions. For this, I will need to install and load a new
+package.
+
+```{r venn_diagram}
+
+#Trying Venn Diagram
+#Install and load library
+install.packages("VennDiagram")
+library(VennDiagram)
+
+# Chart
+venn.diagram(
+  #passes vectors that will are going to the analysed.
+  x = list(daily_activity_tb$Id, daily_sleep_tb$Id, weight_info_tb$Id, second_heart_rate_tb$Id),
+  category.names = users_event$event,
+  #saves file
+  filename = '../figure_output/02_venn_diagramm_user_types.png',
+  
+  # Output features
+  imagetype="png",
+  height = 1200,
+  width = 1800,
+  output=TRUE,
+  
+  #Format Numbers
+  cex = .6,
+  fontface = "bold",
+  fontfamily = "sans",
+  
+  # Format categories names
+  cat.cex = 0.6,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.fontfamily = "sans",
+  
+  # Format elipses.
+  col=c("#bebada", '#80b1d3', '#8dd3c7', '#b3de69'),
+  fill = c(alpha("#bebada",0.3), alpha('#80b1d3',0.3), alpha('#8dd3c7',0.3), alpha('#b3de69',0.3)),
+) 
+
+```
+
+I will continue the analysis by merging the tables *daily_sleep* and
+*weight_info* to the *daily_activity*. As I observed when I was setting
+the model for the data set, *daily_activity* already contains merged
+data from *steps*, *calories* and *intensities*.
+
+```{r merging_tables_for_analysis}
+
+# First merge all the 3 tibbles into a new one
+bella_tb_daily <- daily_activity_tb %>%
+  full_join(daily_sleep_tb) %>%
+  full_join(weight_info_tb)
+
+# a quick look at the title
+glimpse(bella_tb_daily)
+
+# exclude columns we will not need in the analysis
+bella_tb_daily <- bella_tb_daily %>%
+  select(-WeightPounds,-LogId, -IsManualReport)
+
+#general stats selecting column, just for practice
+bella_tb_daily %>%
+  select(TotalSteps, TotalDistance, VeryActiveMinutes:SedentaryMinutes, TotalMinutesAsleep, Calories) %>%
+  summary()
+
+#Last but not least, I also want to check the percentage of self-logged activities.
+#timespan of data (a3)
+n_distinct(bella_tb_daily$ActivityDate)
+#from
+min(bella_tb_daily$ActivityDate)
+#to
+max(bella_tb_daily$ActivityDate)
+```
+
+After running this block of code I see that of the 33 unique users from
+my data set, 24 record sleep data, followed by 14 records for
+heart-rate. Weight information is only used by 8 users, being the least
+popular function. On top of it, of all the entries from the daily
+activity, only 3.4% of recorded represent self-reported data data.
+
+The data was collected over 31 days from 12 April 2016 to 12 May 2016.
+
+From these insights, I can share with my stakeholders that:
+
+-   Most of the data is recorded automatically. Only 3,4% of data is
+    recorded manually by users.
+-   Users are using the trackers to record their activity automatically,
+    followed to monitoring sleep and heart rate.
+-   Of the entire data set, only 3 people monitor everything.
+
+### 4.2 Exploring segments and their characteristics (Set B)
+
+#### 4.2.1 Segment 01: User loyalty
+
+The first segment I will explore is how much users wear their devices. I
+decided to run the analysis following the classification:
+
+-   **Loyal users:** Data for at least 80% of the days
+
+-   **Casual users:** Data for 50% - 80% of the days
+
+-   **Rare users:** Data for less than 50% of the days
+
+I will look into the monthly averages to analyse the number of steps and
+so as to give a profile for each user.
+
+```{r segment_user_loyalty}
+#timespan of data
+n_distinct(bella_tb_daily$ActivityDate)
+
+#check amount of recorded days by user - 31 days
+bella_user_tb <- bella_tb_daily %>%
+  group_by(Id) %>%
+  summarise(count=n()) %>%
+  mutate(type_bella_user = case_when(
+    count >= 25 ~ "Loyal",
+    count < 25 & count >= 16 ~"Casual",
+    count <= 15 ~ "Rare"
+  )) %>%
+arrange(desc(count))
+
+bella_tb_daily <- bella_user_tb %>%
+  select(Id, type_bella_user) %>%
+  inner_join(bella_tb_daily)
+
+bella_tb_daily %>%
+  group_by(type_bella_user, Id) %>%
+  summarise(count = n())
+
+#Creates a factor for loyalty,
+# so in graphs it will be ordered from loyal to rare user
+bella_tb_daily$type_bella_user <- factor(bella_tb_daily$type_bella_user,levels = c("Loyal", "Casual", "Rare"))
+
+# counts the type of bella user
+bella_tb_daily %>% 
+  group_by(type_bella_user) %>%
+  summarise(count = n_distinct(Id),
+            percentage = count/n_distinct(bella_tb_daily$Id)*100) %>%
+  #Here I will draw a pie chart with the types of users
+  ggplot(aes(x="", y=count, fill=type_bella_user)) +
+  #I need to set the geom bar and add the coord_polar to transform the graph from bar to pie
+  geom_bar(width = 1, stat = "identity")+
+  coord_polar("y", start=0)+
+  #change fill colours
+  scale_fill_manual(values=c("#b3de69", '#ffffb3', '#fb8072')) +
+  #adds labels
+  labs(title = "User profile: Loyalty", caption = "Based on a sample of 33 users for 31 days - April to May 2016.") +
+  #adds labels with count
+  geom_label(aes(label = count), color = "#1c49ab", position = position_stack(vjust = 0.5),show.legend = FALSE)+
+  #Customise legend
+  guides(fill = guide_legend(title = "Type of Bellabeat user"))+
+  #customise colours of the labels
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  panel.grid = element_blank(),
+  panel.background = element_blank(),
+  axis.line = element_blank(),
+  axis.text  = element_blank(),
+  axis.title = element_blank()
+  )
+
+# Saves recent graph
+ggsave("../figure_output/03_user_profile_loyalty.png")
+
+
+```
+
+These stats tell me something about my sample: **Most users of this
+sample (88%) use the smart watch with high frequency, or more than 80%
+of the time (25-31 days)**.
+
+#### 4.2.2 Segment 02: Risk of premature death & Number of steps
+
+Literature suggests the following regarding the daily optimal number of
+steps and risk of premature death:
+
+-   At least 7,000 steps reduces the chances of premature death
+-   4,400 is enough to reduce the risk of death considerably
+
+Therefore, I created the following classification:
+
+-   **Less than 4,400 steps:** High risk
+
+-   **Between 4,400 - 7,000 steps:** Medium risk
+
+-   **More than 7,000 steps:** Low risk
+
+```{r segment_risk_premature_death}
+
+# create new tibble with averages by user
+user_type_tb <- bella_tb_daily %>%
+  group_by(Id) %>%
+  summarise(mean_daily_steps = mean (TotalSteps),
+            mean_calories = mean (Calories),
+            mean_sleep_minutes= mean (TotalMinutesAsleep),
+            mean_very_active_minutes = mean(VeryActiveMinutes),
+            mean_fairly_active_minutes = mean(FairlyActiveMinutes),
+            mean_lightly_active_minutes= mean(LightlyActiveMinutes),
+            mean_sedentary_minutes = mean(SedentaryMinutes),
+            count_records=n())
+
+# create new column in user_type based on their risk and number of steps
+user_type_tb <- user_type_tb %>%
+  mutate(premature_death_risk = case_when(
+    mean_daily_steps < 4400 ~ "High risk",
+    mean_daily_steps >= 4400 & mean_daily_steps < 7000 ~ "Medium risk",
+    mean_daily_steps >= 7000 ~ "Low risk"
+  ))
+
+#glimpses at the tibble
+glimpse(user_type_tb)
+
+#Creates a factor for premature risk level,
+# so in graphs it will be ordered from high to low risk level
+user_type_tb$premature_death_risk <- factor(user_type_tb$premature_death_risk,levels = c("Low risk", "Medium risk", "High risk"))
+
+#shows the distribution of the amount of recorded days by user
+# this graph is okay to help me understand my data, but I don't want
+# to present it, so I don't need to work on its visuals
+ggplot(user_type_tb)+
+  geom_histogram(aes(x=count_records), binwidth = 5)
+
+#shows the distribution of type of user
+# this graph is okay, but the boxplot in the end might be better
+# as it also shows the mean and variations while the size of the groups
+ggplot(user_type_tb)+
+  geom_bar(aes(x=premature_death_risk)) 
+
+
+# distribution of steps and calories by user premature risk group
+ggplot(user_type_tb)+
+  geom_point(aes(x=mean_daily_steps, y=mean_calories,colour=premature_death_risk))+
+  #adds labels
+  labs(title = "Relationship between Calories and Daily Steps", y= "Calories",  x="Daily Steps", fill="Risk of Premature Death") +
+  #customise colours of the labels
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.background = element_blank(),
+  panel.grid = element_blank(),
+  axis.line = element_line(colour = "#000000") 
+  ) +
+  #change fill colours
+  scale_fill_manual(values=c("#b3de69", '#ffffb3', '#fb8072'))
+
+# Saves recent graph
+ggsave("../figure_output/04_user_profile_loyalty_calories_steps_scatterplot.png")
+
+
+# but this representation is better because I can see the averages and the size of each group
+# so in my presentation I will use this one
+
+ggplot(user_type_tb)+
+  geom_boxplot(aes(y=mean_daily_steps, group=premature_death_risk, fill=premature_death_risk)) +
+  #adds labels
+  labs(title = "Daily Steps for Risk of Premature Death", y= "Daily Steps", fill="Risk of Premature Death") +
+  #customise colours of the labels
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.background = element_blank(),
+  panel.grid = element_blank(),
+  axis.line = element_line(colour = "#000000"),
+  axis.title.x = element_blank(),
+  axis.text.x = element_blank()
+  )+
+  #change fill colours
+  scale_fill_manual(values=c("#b3de69", '#ffffb3', '#fb8072'))
+
+# Saves recent graph
+ggsave("../figure_output/05_user_profile_loyalty_steps_boxplot.png")
+
+```
+
+These stats show my that the majority of my sample has a low risk of
+premature death due to their average number of steps. It also seems that
+there is a relationship between premature death and the calories and
+daily steps for individuals. However I still need to verify this with
+the appropriate statistical methods (which is done in section 4.4).
+
+#### 4.2.3 Segment 03: Fit level
+
+The literature has different recommendations regarding fitness levels:
+
+-   30 minutes of brisk activity in all or most days of the week
+-   150 minutes of moderate activity per week
+-   If you seat for over 8 hours, 60-75 minutes of moderate activity
+
+Based on this, I created the following classification for fit level:
+
+-   **Fit:** The average movement level of the last 30 days is equal or
+    higher to 30 minutes
+
+-   **Fairly active:** The number for active minutes needs to be equal
+    or higher than 60 for individuals who spend 8 hours or more sitting;
+    or if an individual has less than 8 hours sitting per day
+
+-   **Sedentary:** For individuals with more than 8 hours sitting and
+    less than 60 minutes of active or fairly active activity
+
+```{r segment_fit_level}
+
+user_type_tb
+
+#create classification
+user_type_tb <- user_type_tb %>%
+  mutate(fit_profile = case_when(
+    mean_very_active_minutes >= 30 ~ "Fit",
+    mean_sedentary_minutes >= 480 & mean_very_active_minutes + mean_fairly_active_minutes <= 60 ~ "Sedentary",
+    TRUE  ~ "Fairly Active"
+    )) 
+
+glimpse(user_type_tb)
+
+
+#Creates a factor for premature risk level,
+# so in graphs it will be ordered from high to low risk level
+user_type_tb$fit_profile <- factor(user_type_tb$fit_profile,levels = c("Fit", "Fairly Active", "Sedentary"))
+
+
+# fit profile users check
+user_type_tb %>%
+  group_by(fit_profile) %>%
+  summarise(count = n(),
+            active_min = mean(mean_very_active_minutes),
+            sedentary_min = mean(mean_sedentary_minutes))
+
+#Here I can see we have a large number of users who stay sitting a long time during the day. The averages in the fit group show that they also sit for longer periods of time, but they compensate it by intensive periods of exercise
+
+#Let's plot a graph to explain this to the stakeholders.
+#First I want to cause impact and show the large number of sedentary people
+# so I will create a Pie Chart
+
+# counts the type of bella user
+user_type_tb %>%
+  group_by(fit_profile) %>%
+  summarise(count = n()) %>%
+  #Here I will draw a pie chart with the types of users
+  ggplot(aes(x="", y=count, fill=fit_profile)) +
+  #I need to set the geom bar and add the coord_polar to transform the graph from bar to pie
+  geom_bar(width = 1, stat = "identity")+
+  coord_polar("y", start=0)+
+  #change fill colours
+  scale_fill_manual(values=c("#b3de69", '#ffffb3', '#fb8072')) +
+  #adds labels
+  labs(title = "User profile: Fitness", caption = "Based on a sample of 33 users for 31 days - April to May 2016.") +
+  #adds labels with count
+  geom_label(aes(label = count), color = "#1c49ab", position = position_stack(vjust = 0.5),show.legend = FALSE)+
+  #Customise legend
+  guides(fill = guide_legend(title = "Fitness level"))+
+  #customise colours of the labels
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  panel.grid = element_blank(),
+  panel.background = element_blank(),
+  axis.line = element_blank(),
+  axis.text  = element_blank(),
+  axis.title = element_blank()
+  )
+
+# Saves recent graph
+ggsave("../figure_output/06_user_profile_fitness.png")
+
+
+#Now I want to show how their fitness level and their averages
+ggplot(user_type_tb)+
+  geom_boxplot(aes(y=mean_sedentary_minutes, group=fit_profile, fill=fit_profile)) +
+  geom_boxplot(aes(y=mean_very_active_minutes, group=fit_profile, fill=fit_profile)) +
+  #adds labels
+  labs(title = "Sedentary and Active Minutes for Fitness Level", y= "Minutes", fill="Fitness Level",
+       caption = "The blocks on the top of the image represent sedentary minutes; 
+       The blocks on the bottom of the image represent very active minutes.") +
+    geom_hline(yintercept = 500) +
+  #customise colours of the labels
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.background = element_blank(),
+  panel.grid = element_blank(),
+  axis.line = element_line(colour = "#000000"),
+  axis.title.x = element_blank(),
+  axis.text.x = element_blank()
+  )+
+  #change fill colours
+  scale_fill_manual(values=c("#b3de69", '#ffffb3', '#fb8072'))
+
+# Saves recent graph
+ggsave("../figure_output/07_user_profile_fitness_sedentary_active_minutes.png")
+
+```
+
+After plotting the last graph, I can see that most users can be
+classified as sedentary. This seems quite strange to me considering the
+analysis on the number of steps we saw earlier. So I decided to dig
+deeper into the data and I noticed several users have '1440 minutes' of
+sedentary activity in some days. That means they would have spent 24
+hours sitting! As I cannot ask the data providers how the sedentary
+minutes are calculated, and its relationship with sleep time, I decided
+not to user these last graphs in my presentation. It is always important
+to be cautious and do not assume things we don't know.
+
+### 4.3 Explorations for patterns
+
+Now I will move on looking for patterns in the data.
+
+```{r pattern_day_week}
+
+# let me remind myself of the daya in the table
+glimpse(bella_tb_daily)
+
+# I will create a new column with the day of the week
+# based on my column ActivityDate
+bella_tb_daily <- bella_tb_daily %>%
+  mutate(
+    WeekDay = weekdays(ActivityDate)
+  )
+
+# create a factor for days of the week, so they are organise properly
+bella_tb_daily$WeekDay <- factor(bella_tb_daily$WeekDay,
+                                 levels = c("Monday", "Tuesday", "Wednesday", "Thursday",
+                                            "Friday", "Saturday", "Sunday" ))
+
+
+# visualise the graph for total steps and calories
+ggplot(bella_tb_daily)+
+  geom_jitter(aes(y=TotalSteps, x=Calories, colour=WeekDay)) +
+  facet_wrap(~ WeekDay)
+# I can see some "extra steps" on saturdays, but nothing conclusive
+
+# Days of the week and steps
+ggplot(bella_tb_daily, aes(WeekDay, TotalSteps))+
+  geom_bar(stat = "summary_bin", fun = mean, fill="#6186f0") +
+  #two lines to intercept values for sedentary and ideal number of steps
+  geom_hline(yintercept = 4400, colour="red") +
+  geom_hline(yintercept = 7000) +
+  labs(title = "Total Steps per Day of the Week", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", y="Average Number of Steps", x= "") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank() 
+  )
+
+# Saves recent graph
+ggsave("../figure_output/08_steps_day_week_all.png")
+
+
+# Days of the week and calories
+ggplot(bella_tb_daily, aes(WeekDay, Calories))+
+  geom_bar(stat = "summary_bin", fun = mean, fill="#6186f0") +
+  #line to intercept average calories for adult
+  geom_hline(yintercept = 2200, colour="red") +
+  labs(title = "Total Calories per Day of the Week", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", y="Average Calories", x= "") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank() 
+  )
+
+# Saves recent graph
+ggsave("../figure_output/09_calories_day_week_all.png")
+
+# Days of the week and sleep
+ggplot(bella_tb_daily, aes(WeekDay, TotalMinutesAsleep))+
+  geom_bar(stat = "summary_bin", fun = mean, fill="#6186f0") +
+  # intercept the line for sleeping value (at least 7 hours or 420 minutes, max 9 hours)
+  geom_hline(yintercept = 420, colour="red") +
+  geom_hline(yintercept = 540, colour="blue") +
+    labs(title = "Sleep Minutes per Day of the Week", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", y="Average Sleep Minutes", x= "") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank()
+  )
+
+
+# Saves recent graph
+ggsave("../figure_output/10_sleep_day_week_all.png")
+
+```
+
+From the graphs above, I observe that the number of steps and calories
+is somehow constant among users. I can also see users are not sleeping
+the recommended amount of 7 hours. But would this behaviour stay the
+same if I consider the different types of users? Let's find out!
+
+```{r pattern_day_week_groups}
+
+# STEPS
+# Days of the week and steps // Loyalty Groups
+ggplot(bella_tb_daily, aes(WeekDay, TotalSteps))+
+  geom_bar(stat = "summary_bin", fun = mean, fill="#6186f0") +
+  #two lines to intercept values for sedentary and ideal number of steps
+  geom_hline(yintercept = 4400, colour="red") +
+  geom_hline(yintercept = 7000) +
+  labs(title = "Total Steps per Day of the Week / Loyalty Groups", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", y="Average Number of Steps", x= "") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank(),
+  axis.text.x = element_text(angle= 90, size= 10)
+  ) +
+  facet_wrap( ~type_bella_user)
+
+# Saves recent graph
+ggsave("../figure_output/10_steps_day_week_bella_user_type.png")
+
+
+# add premature death risk to tb
+bella_tb_daily <- user_type_tb %>%
+  select(Id, premature_death_risk) %>%
+  inner_join(bella_tb_daily)
+
+
+# Days of the week and steps // Premature Death Risk
+ggplot(bella_tb_daily, aes(WeekDay, TotalSteps))+
+  geom_bar(stat = "summary_bin", fun = mean, fill="#6186f0") +
+  #two lines to intercept values for sedentary and ideal number of steps
+  geom_hline(yintercept = 4400, colour="red") +
+  geom_hline(yintercept = 7000) +
+  labs(title = "Total Steps per Day of the Week / Premature Death Risk", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", y="Average Number of Steps", x= "") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank(),
+  axis.text.x = element_text(angle= 90, size= 10)
+  ) +
+  facet_wrap( ~premature_death_risk)
+
+
+# Saves recent graph
+ggsave("../figure_output/11_steps_day_week_bella_user_death_risk.png")
+
+
+#############################################################################
+# CALORIES
+
+# Days of the week and calories // Loyalty Groups
+ggplot(bella_tb_daily, aes(WeekDay, Calories))+
+  geom_bar(stat = "summary_bin", fun = mean, fill="#6186f0") +
+  #line to intercept average calories for adult
+  geom_hline(yintercept = 2200, colour="red") +
+  labs(title = "Total Calories per Day of the Week / Loyalty Groups", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", y="Average Calories", x= "") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank() ,
+  axis.text.x = element_text(angle= 90, size= 10)
+  ) + 
+  facet_wrap( ~type_bella_user)
+
+# Saves recent graph
+ggsave("../figure_output/12_calories_day_week_bella_user_type.png")
+
+
+
+# Days of the week and calories // Premature Death Risk
+ggplot(bella_tb_daily, aes(WeekDay, Calories))+
+  geom_bar(stat = "summary_bin", fun = mean, fill="#6186f0") +
+  #line to intercept average calories for adult
+  geom_hline(yintercept = 2200, colour="red") +
+  labs(title = "Total Calories per Day of the Week / Premature Death Risk", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", y="Average Calories", x= "") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank() ,
+  axis.text.x = element_text(angle= 90, size= 10)
+  ) +
+  facet_wrap( ~premature_death_risk)
+
+# Saves recent graph
+ggsave("../figure_output/13_calories_day_week_bella_user_death_risk.png")
+
+
+###################################################################################
+# SLEEP
+# Days of the week and sleep / Loyalty Groups
+ggplot(bella_tb_daily, aes(WeekDay, TotalMinutesAsleep))+
+  geom_bar(stat = "summary_bin", fun = mean, fill="#6186f0") +
+  # intercept the line for sleeping value (at least 7 hours or 420 minutes, max 9 hours)
+  geom_hline(yintercept = 420, colour="red") +
+  geom_hline(yintercept = 540, colour="blue") +
+    labs(title = "Sleep Minutes per Day of the Week / Loyalty Groups", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", y="Average Sleep Minutes", x= "") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank() ,
+  axis.text.x = element_text(angle= 90, size= 10)
+  ) + 
+  facet_wrap( ~type_bella_user)
+
+
+# Saves recent graph
+ggsave("../figure_output/14_sleep_day_week_bella_user_type.png")
+
+
+
+# Days of the week and sleep / Premature Death Risk
+ggplot(bella_tb_daily, aes(WeekDay, TotalMinutesAsleep))+
+  geom_bar(stat = "summary_bin", fun = mean, fill="#6186f0") +
+  # intercept the line for sleeping value (at least 7 hours or 420 minutes, max 9 hours)
+  geom_hline(yintercept = 420, colour="red") +
+  geom_hline(yintercept = 540, colour="blue") +
+    labs(title = "Sleep Minutes per Day of the Week / Premature Death Risk", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", y="Average Sleep Minutes", x= "") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank() ,
+  axis.text.x = element_text(angle= 90, size= 10)
+  ) + 
+  facet_wrap( ~premature_death_risk)
+
+
+# Saves recent graph
+ggsave("../figure_output/15_sleep_day_week_bella_user_death_risk.png")
+
+```
+
+With the graphs above I can see that the total number of steps is more
+constant for Loyal users when compared to Casual and Rare users. I see a
+similar behaviour if I breakdown my users into groups with different
+risks of premature death. Users with a low risk of premature death
+perform in average more than 7,700 steps for every day of the week.
+
+Users with low risk of premature death spend more calories in average
+than the other groups, who do not even reach the minimum of 2200
+calories/spent to maintain their weight. Again, the trend is similar for
+Loyalty groups: Loyal users consumer more calories than the other two
+groups.
+
+Lastly, we can see that the number of minutes sleep is somewhat constant
+through the week for individuals classified as loyal users. Casual users
+sleep more on Sundays. We have not enough data for Rare users. In terms
+of premature death risk, users with low risk of death sleep less than
+the other groups, however the differences are not too big. In any case,
+we will check for statistically different results in the following
+section.
+
+### 4.4 Statistical tests for correlation
+
+With this, we arrive at the most complex part of the analysis: We will
+check if the results we observed above are statistically significant or
+if they happened by chance.
+
+There are many statistical tests you can use, and it will all depend on
+the types of variables you are comparing and how your sample behaves. I
+will assume you have a basic knowledge in this area, but nevertheless,
+the links below are always useful:
+
+-   <https://statsandr.com/blog/what-statistical-test-should-i-do/>
+
+-   <https://statsandr.com/blog/files/overview-statistical-tests-statsandr.pdf>
+
+-   <https://www.statsflowchart.co.uk/>
+
+We will start with some simple correlation tests for our continuous
+variables (Minutes sleep, Calories and Steps).
+
+```{r simple_correlation}
+
+# The first thing I need to do, is to test for normality
+# because this will interfere with the type of tests I need to run
+# REFENCES FOR CORRELATION PLOT: https://r-coder.com/correlation-plot-r/
+
+# Tests for normality | Shapiro Test
+#if p–value is greater than 0.05, so we can assume the normality
+ shapiro.test(bella_tb_daily$TotalSteps)
+ shapiro.test(bella_tb_daily$TotalMinutesAsleep)
+ shapiro.test(bella_tb_daily$Calories)
+
+#as all p values are lower than 0.05, we can't assume these distributions are normal
+#Therefore, Spearman’s coefficient is considered more appropriate than Pearson’s for skewed distributions (Mukaka, 2012)
+# For all the correlations, I need p lower than 0.05 for statistical significant results
+#SLEEP AND STEPS
+
+ cor.test(bella_tb_daily$TotalSteps, bella_tb_daily$TotalMinutesAsleep, use="pairwise.complete.obs", method = "spearman")  # pairwise function eliminates the NA values
+
+ # plot the graph to have a visual representation
+ bella_tb_daily %>%
+   ggplot(aes(x = TotalSteps, y = TotalMinutesAsleep)) +
+   geom_jitter() +
+   geom_smooth(method = "lm", se =TRUE, color = 'red') +
+   labs(title = "Correlation between Total Steps and Minutes Asleep", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", x = "Steps", y="Minutes Asleep") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank() ,
+  axis.text.x = element_text(angle= 45, size= 10)
+  )
+
+ ggsave("../figure_output/16_correlation_steps_sleep.png")
+
+# S = 14066506, p-value = 4.382e-06
+# rho =  -0.2245838 
+
+ 
+ ##################################
+ 
+ #SLEEP AND CALORIES
+ cor.test(bella_tb_daily$Calories, bella_tb_daily$TotalMinutesAsleep, use="pairwise.complete.obs", method = "spearman")
+ 
+ #S = 11929269, p-value = 0.4366
+ # rho = - -0.03852297
+ 
+  bella_tb_daily %>%
+   ggplot(aes(x = Calories, y = TotalMinutesAsleep)) + 
+   geom_jitter()+ 
+   geom_smooth(method = "lm", se =TRUE, color = 'red')+
+      labs(title = "Correlation between Calories and Minutes Asleep", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", x = "Calories", y="Minutes Asleep") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank() ,
+  axis.text.x = element_text(angle= 45, size= 10)
+  ) 
+  
+ ggsave("../figure_output/17_correlation_calories_sleep.png")
+ 
+##########################
+  
+ 
+ #CALORIES AND STEPS
+  cor.test(bella_tb_daily$Calories, bella_tb_daily$TotalSteps, use="pairwise.complete.obs", method = "spearman")
+ 
+   
+  #p = -2.2e-16
+  #rho = 0.5592
+
+  bella_tb_daily %>%
+   ggplot(aes(x = Calories, y = TotalSteps)) + 
+   geom_point() + 
+   geom_smooth(method = "lm", se =TRUE, color = 'red') +
+   labs(title = "Correlation between Calories and Steps", caption = "Based on a sample of 33 users for 31 days - April to May 2016.", x = "Calories", y="Steps") +
+  theme(
+  plot.title = element_text(color="#1c49ab", size=16, face="bold"),
+  axis.title = element_text(color="#6186f0", size=12, face="bold"),
+  panel.grid = element_line(color="#cccccc"),
+  panel.background = element_blank(),
+  axis.line = element_blank() ,
+  axis.text.x = element_text(angle= 45, size= 10)
+  ) 
+  
+
+   ggsave("../figure_output/18_correlation_steps_calories.png")
+
+
+#######################################
+
+```
+
+From these results I can see that there is a statistical significant
+monotonic relationship between Calories and Steps with moderate
+strength. This means that when the number of Calories increases, so does
+the number of steps.
+
+As for Sleep and Calories, although the relationship exists, it is
+considered weak.
+
+The interpretation of the coefficients follows research from Akoglu
+(2018) and it is represented on the table below:
+
+| Association strength | Modular Value \| r \| |
+|----------------------|-----------------------|
+| Strong               | \> 6                  |
+| Moderate             | \<= 6 && \>3          |
+| Weak                 | \<= 3                 |
+
+I have some values already, but should we go even further and look at
+all the numeric values we have in the daily data set? For this I will
+work with a correlation matrix.
+
+```{r correlation_matrix}
+
+#Install package
+install.packages("corrplot")
+library(corrplot)
+?corrplot
+
+#Great tutorials on this package: 
+# https://r-coder.com/correlation-plot-r/
+# https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html
+
+#prepare bella table by removing columns I don't need
+# I will also drop NA otherwise the matrix doesn't work
+cor_bella_tb_daily <- bella_tb_daily %>%
+  select(TotalSteps:TotalMinutesAsleep) %>%
+  select(-TotalSleepRecords) %>%
+  drop_na()
+
+
+# because the corrplot is not part of ggplot, I need to find another way to save this file
+#this will be done with the following + dev.off() after the graph is plotted
+png(height=1200, width=1200, file="../figure_output/19_correlation_matrix.png")
+
+corrplot(cor(cor_bella_tb_daily, method = c("spearman")), # Correlation matrix
+         type = "upper",  # Correlation plot style (also "upper" and "lower")
+         order = "original", #order of the variables
+         diag = FALSE, # If TRUE (default), adds the diagonal where cor=1
+         sig.level = .05, #significance level
+         addCoef.col ='#3f3f3f', #text inside colour
+         number.cex= 1, #text label size
+         tl.col = "black", # Labels color
+         title = "Correlation Matrix - Daily Values",       # Main title
+         tl.srt = 45, #rotation
+         tl.cex = 1.2,  #font size
+         method="number") #how I want to populate the values. As there are many, numbers are easier to read
+
+dev.off()
+
+
+```
+
+From this correlation matrix I can infer that the *Distances* and
+*ActivityTypes* are strongly correlated (for example, VeryActiveDistance
+is correlated to VeryActiveMinutes (r=0.97). This is not the same for
+Sedentary though, but we had already seen that something was unclear on
+how Sedentary is calculated based on the results in section 4.2.3.
+
+Additionally, Calories has a moderate association with Total Distance
+and Very Active Minutes, while Total Steps and Total Distance has very
+strong association (which is not a surprise!)
+
+Important to clarify that the values are slightly different than the
+ones we had in the first correlation tests due to the number of
+observations. For the correlation matrix, I already dropped all columns
+with a NA value before the tests, while the first set of correlation
+tests only drops a value based on the observation pair.
+
+Moving on, I want to see if the differences between groups which I
+observed in section 4.3 are statistically significant. As here I am
+working with both categorical and continuous variables, I can no longer
+use the correlation test from the examples above. Additionally, as not
+to make any assumptions on my data (and considering we already saw there
+is no normal distribution for Calories, Sleep and Steps), I will move on
+with a non-parametric test named: Kruskal-Wallis test.
+
+```{r kruskal_tests}
+
+#More info on the Kruskal tests: 
+#. https://statsandr.com/blog/kruskal-wallis-test-nonparametric-version-anova/
+#. http://www.sthda.com/english/wiki/kruskal-wallis-test-in-r 
+
+# I am looking for p values < 0.05
+#premature death risk and calories
+kruskal.test(premature_death_risk ~ mean_calories,
+  data = user_type_tb
+)
+
+#p-value = 0.4667
+
+########
+
+#premature death risk and daily steps
+kruskal.test(premature_death_risk ~ mean_daily_steps,
+  data = user_type_tb
+)
+
+#p-value = 0.4667
+
+########
+#premature death risk and sleep
+kruskal.test(premature_death_risk ~ mean_sleep_minutes,
+  data = user_type_tb
+)
+
+
+
+#type bella user and daily steps
+kruskal.test(type_bella_user ~ mean_calories,
+  data = user_type_tb
+)
+
+#type bella user and calories
+kruskal.test(type_bella_user ~ mean_daily_steps,
+  data = user_type_tb
+)
+
+
+#type bella user and sleep
+kruskal.test(type_bella_user ~ mean_sleep_minutes,
+  data = user_type_tb
+)
+
+
+#steps and weekdays
+kruskal.test(WeekDay ~ TotalSteps,
+  data = bella_tb_daily
+)
+
+kruskal.test(WeekDay ~ Calories,
+  data = bella_tb_daily
+)
+
+kruskal.test(WeekDay ~ TotalMinutesAsleep,
+  data = bella_tb_daily
+)
+
+```
+
+As you can see, none of the tests above returned a value of p\<0.05,
+therefore the differences observed in terms of groups and also days of
+the week cannot be used for generalisation. We can still present them to
+the stakeholders, but it is important to make clear that no statistical
+difference was found.
+
+Last but not least, I will compare the two group classifications I
+created by using a contingency table.
+
+```{r mosaic_and_contigency_table}
+
+# More infor on contingency tables
+# https://r-coder.com/contingency-table-r/
+
+# install package
+library(vcd)
+
+#prepare table by including the type of bella user
+user_type_tb <- bella_user_tb %>%
+  inner_join(user_type_tb)
+
+#create factor
+user_type_tb$type_bella_user <- factor(user_type_tb$type_bella_user,levels = c("Loyal", "Casual", "Rare"))
+
+# Sees how users are distributed in two groups
+tbl <- xtabs(~premature_death_risk + type_bella_user, user_type_tb)
+ftable(tbl)
+
+# simple mosaic
+mosaic(tbl, main = "Bellabeat Users Breakdown")
+
+# learn more about mosaic functions
+?mosaic
+
+
+# create a more fancy mosaic which I can save
+png(height=1200, width=1200, file="../figure_output/20_mosaic_user_type_breakdown.png")
+
+mosaic(tbl, 
+       shade = TRUE,
+       legend = TRUE,
+       labeling_args = list(set_varnames = c(type_bella_user = "Loyalty",
+                                             premature_death_risk = "Risk of Premature Death"
+                                             )
+                            ),
+       set_labels = list(
+                         type_bella_user = c("L", "C", "R"),
+                         premature_death_risk = c("L", "M", "H")
+                         ),
+       main = "Bellabeat Users Breakdown")
+
+dev.off()
+```
+
+From this graph we see that there is no statistical significant
+relationship between the groups (p \> 0.05)
+
+However I can still share with my stakeholders that: Most users are
+considered loyal, with a low risk of premature death (19/33). We have
+however 5 users with Medium risk and 5 with High risk.
+
+## 5. Conclusions and recommendations
+
+It was a long way and now we have many insights and 20 graphs in our
+folder! We don't have to share all of them. Instead, I created a
+presentation with the most important one, which you can find here:
+
+If you arrive here, try to run your own analysis and come up to your own
+conclusions. Let me know later on if there is something unclear or if
+you have taken another approach to the analysis.
+
+**Knowledge is more when it is shared ❤️**
+
+## 6. References
+
+Akoglu, H. (2018). User's guide to correlation coefficients. Turkish
+Journal of Emergency Medicine, 18(3), 91--93.
+<https://doi.org/10.1016/j.tjem.2018.08.001>
+
+Mukaka, M. M. (2012). A guide to appropriate use of correlation
+coefficient in medical research. Malawi Medical Journal : The Journal of
+Medical Association of Malawi, 24(3), 69--71.
+<https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3576830/>
+
+## 7. Downloads
+
+-   You can download this set and reproduce it on your machine here:
+-   You can find the project description and presentation with slides
+    here: <https://imgabi.com/project-bellabeat/>
+-   Let's connect on Linkedin:
+    <https://linkedin.com/in/gabriellafonsecaribeiro>
+-   I am also sharing memes on Twitter:
+    <https://twitter.com/imgabidotcom>
