@@ -8,6 +8,7 @@ I tried to add as many comments as possible so this document can hopefully help 
 👩‍💻 You can find the "executive version" of the project in my portfolio: (https://imgabi.com/project-bellabeat/)d
 
 **Course completed in October , 2022**
+
 Certification: [https://www.coursera.org/account/accomplishments/specialization/certificate/YKQVTS5XFA4V](https://www.coursera.org/account/accomplishments/specialization/certificate/YKQVTS5XFA4V)
 
 
